@@ -63,7 +63,8 @@ class BaseDrop:
         self.id: str = data["id"]
         self.name: str = data["name"]
         self.campaign: DropsCampaign = campaign
-        self.benefits: list[Benefit] = [Benefit(b) for b in (data["benefitEdges"] or [])]
+        self.benefits: list[Benefit] = [
+            Benefit(b) for b in (data["benefitEdges"] or [])]
         self.starts_at: datetime = timestamp(data["startAt"])
         self.ends_at: datetime = timestamp(data["endAt"])
         self.claim_id: str | None = None
@@ -88,7 +89,8 @@ class BaseDrop:
             and all(self.starts_at <= dt < self.ends_at for dt in dts)
         ):
             self.is_claimed = True
-        self.precondition_drops: list[str] = [d["id"] for d in (data["preconditionDrops"] or [])]
+        self.precondition_drops: list[str] = [d["id"]
+                                              for d in (data["preconditionDrops"] or [])]
 
     def __repr__(self) -> str:
         if self.is_claimed:
@@ -136,7 +138,8 @@ class BaseDrop:
         self, channel: Channel | None = None, ignore_channel_status: bool = False
     ) -> bool:
         return (
-            self._base_can_earn() and self.campaign._base_can_earn(channel, ignore_channel_status)
+            self._base_can_earn() and self.campaign._base_can_earn(
+                channel, ignore_channel_status)
         )
 
     @property
@@ -176,11 +179,14 @@ class BaseDrop:
             # two different claim texts, becase a new line after the game name
             # looks ugly in the output window - replace it with a space
             self._twitch.print(
-                _("status", "claimed_drop").format(drop=claim_text.replace('\n', ' '))
+                _("status", "claimed_drop").format(
+                    drop=claim_text.replace('\n', ' '))
             )
-            self._twitch.gui.tray.notify(claim_text, _("gui", "tray", "notification_title"))
+            self._twitch.gui.tray.notify(claim_text, _(
+                "gui", "tray", "notification_title"))
         else:
-            logger.error(f"Drop claim has potentially failed! Drop ID: {self.id}")
+            logger.error(
+                f"Drop claim has potentially failed! Drop ID: {self.id}")
         return result
 
     async def _claim(self) -> bool:
@@ -343,7 +349,7 @@ class DropsCampaign:
         self.id: str = data["id"]
         self.name: str = data["name"]
         self.game: Game = Game(data["game"])
-        self.linked: bool = data["self"]["isAccountConnected"]
+        self.linked: bool = data["self"]["isAccountConnected"] or True
         self.link_url: str = data["accountLinkURL"]
         # campaign's image actually comes from the game object
         # we use regex to get rid of the dimensions part (ex. ".../game_id-285x380.jpg")
@@ -353,7 +359,8 @@ class DropsCampaign:
         self._valid: bool = data["status"] != "EXPIRED"
         allowed: JsonType = data["allow"]
         self.allowed_channels: list[Channel] = (
-            [Channel.from_acl(twitch, channel_data) for channel_data in allowed["channels"]]
+            [Channel.from_acl(twitch, channel_data)
+             for channel_data in allowed["channels"]]
             if allowed["channels"] and allowed.get("isEnabled", True) else []
         )
         self.timed_drops: dict[str, TimedDrop] = {
